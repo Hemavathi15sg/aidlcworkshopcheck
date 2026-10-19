@@ -93,7 +93,8 @@ def test_delete_task(client):
 
 
 def test_delete_missing_task_returns_404(client):
-    assert client.delete("/api/tasks/999").status_code == 404
+    res = client.delete("/api/tasks/999")
+    assert res.status_code == 404
 
 
 def test_openapi_spec_is_served(client):
