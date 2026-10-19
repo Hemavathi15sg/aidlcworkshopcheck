@@ -60,6 +60,8 @@
     td:nth-child(3) { min-width: 320px; line-height: 1.5; color: #4b5563; }
     td:nth-child(n+4) { white-space: nowrap; }
     .row-actions { display: flex; gap: 8px; }
+    .pagination { display: flex; justify-content: center; align-items: center; gap: 12px; padding: 14px; }
+    #pageIndicator { min-width: 100px; text-align: center; }
 
     .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
     .p1 { background: #fee2e2; color: #b91c1c; }
@@ -114,6 +116,11 @@
           <tbody id="taskBody"></tbody>
         </table>
       </div>
+      <nav class="pagination" aria-label="Task pages">
+        <button type="button" class="secondary" id="previousPage" aria-label="Previous page" disabled>Previous</button>
+        <span id="pageIndicator" aria-live="polite">Page 1 of 0</span>
+        <button type="button" class="secondary" id="nextPage" aria-label="Next page" disabled>Next</button>
+      </nav>
     </section>
   </main>
 

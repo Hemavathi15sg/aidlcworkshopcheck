@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_frontend_is_served_by_api(client):
     response = client.get("/")
     assert response.status_code == 200
@@ -19,9 +22,63 @@ def test_static_files_do_not_expose_backend(client):
 def test_list_tasks_returns_seed_data(client):
     res = client.get("/api/tasks")
     assert res.status_code == 200
-    ids = [t["id"] for t in res.json]
-    assert len(ids) == 15
+    assert res.json["page"] == 1
+    assert res.json["page_size"] == 10
+    assert res.json["total"] == 15
+    assert res.json["total_pages"] == 2
+    ids = [t["id"] for t in res.json["items"]]
+    assert len(ids) == 10
     assert ids == sorted(ids)
+
+
+def test_list_tasks_returns_requested_page(client):
+    res = client.get("/api/tasks?page=2&page_size=5")
+    assert res.status_code == 200
+    all_tasks = client.get("/api/tasks?page_size=50").json["items"]
+    assert res.json["items"] == all_tasks[5:10]
+    assert res.json["page"] == 2
+    assert res.json["page_size"] == 5
+    assert res.json["total"] == 15
+    assert res.json["total_pages"] == 3
+
+
+def test_list_tasks_accepts_maximum_page_size(client):
+    res = client.get("/api/tasks?page_size=50")
+    assert res.status_code == 200
+    assert res.json["page_size"] == 50
+    assert len(res.json["items"]) == 15
+    assert res.json["total_pages"] == 1
+
+
+@pytest.mark.parametrize(
+    ("query", "error"),
+    [
+        ("page=abc", "page must be an integer"),
+        ("page_size=abc", "page_size must be an integer"),
+        ("page=0", "page must be at least 1"),
+        ("page_size=0", "page_size must be between 1 and 50"),
+        ("page_size=51", "page_size must be between 1 and 50"),
+    ],
+)
+def test_list_tasks_rejects_invalid_pagination(client, query, error):
+    res = client.get(f"/api/tasks?{query}")
+    assert res.status_code == 400
+    assert res.json == {"error": error}
+
+
+def test_list_tasks_returns_empty_pagination_metadata(client):
+    from app import tasks
+
+    tasks.clear()
+    res = client.get("/api/tasks")
+    assert res.status_code == 200
+    assert res.json == {
+        "items": [],
+        "page": 1,
+        "page_size": 10,
+        "total": 0,
+        "total_pages": 0,
+    }
 
 
 def test_get_task_by_id(client):
@@ -100,3 +157,10 @@ def test_openapi_spec_is_served(client):
     res = client.get("/openapi.json")
     assert res.status_code == 200
     assert "/api/tasks" in res.json["paths"]
+    list_tasks = res.json["paths"]["/api/tasks"]["get"]
+    assert [param["name"] for param in list_tasks["parameters"]] == ["page", "page_size"]
+    assert list_tasks["responses"]["400"]
+    assert (
+        list_tasks["responses"]["200"]["content"]["application/json"]["schema"]["$ref"]
+        == "#/components/schemas/PaginatedTasks"
+    )

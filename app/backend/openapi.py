@@ -20,6 +20,20 @@ def build_spec(assignees, areas, priorities):
     }
     error = {"type": "object", "properties": {"error": {"type": "string"}}}
     task_id_param = {"name": "task_id", "in": "path", "required": True, "schema": {"type": "integer"}}
+    pagination_params = [
+        {
+            "name": "page",
+            "in": "query",
+            "required": False,
+            "schema": {"type": "integer", "minimum": 1, "default": 1},
+        },
+        {
+            "name": "page_size",
+            "in": "query",
+            "required": False,
+            "schema": {"type": "integer", "minimum": 1, "maximum": 50, "default": 10},
+        },
+    ]
 
     def json_response(description, schema_ref):
         return {"description": description, "content": {"application/json": {"schema": {"$ref": schema_ref}}}}
@@ -48,12 +62,14 @@ def build_spec(assignees, areas, priorities):
             "/api/tasks": {
                 "get": {
                     "tags": ["Tasks"],
-                    "summary": "List all tasks",
+                    "summary": "List a page of tasks sorted by ID ascending",
+                    "parameters": pagination_params,
                     "responses": {
                         "200": {
-                            "description": "List of tasks",
-                            "content": {"application/json": {"schema": {"type": "array", "items": {"$ref": "#/components/schemas/Task"}}}},
-                        }
+                            "description": "Paginated tasks",
+                            "content": {"application/json": {"schema": {"$ref": "#/components/schemas/PaginatedTasks"}}},
+                        },
+                        "400": bad_request,
                     },
                 },
                 "post": {
@@ -114,6 +130,22 @@ def build_spec(assignees, areas, priorities):
                 "TaskInput": task_input,
                 "Task": task,
                 "Error": error,
+                "PaginatedTasks": {
+                    "type": "object",
+                    "required": ["items", "page", "page_size", "total", "total_pages"],
+                    "properties": {
+                        "items": {"type": "array", "items": {"$ref": "#/components/schemas/Task"}},
+                        "page": {"type": "integer", "minimum": 1, "example": 1},
+                        "page_size": {"type": "integer", "minimum": 1, "maximum": 50, "example": 10},
+                        "total": {"type": "integer", "minimum": 0, "example": 15},
+                        "total_pages": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Zero when there are no tasks.",
+                            "example": 2,
+                        },
+                    },
+                },
                 "Meta": {
                     "type": "object",
                     "properties": {
