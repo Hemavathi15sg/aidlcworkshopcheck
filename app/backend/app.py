@@ -101,7 +101,13 @@ def search_tasks():
 @app.get("/api/reports")
 def download_report():
     name = request.args.get("name", "weekly-summary.txt")
-    return send_file(os.path.join(REPORTS_DIR, name))
+    reports_base = Path(REPORTS_DIR).resolve()
+    requested_path = (reports_base / name).resolve()
+    try:
+        requested_path.relative_to(reports_base)
+    except ValueError:
+        return jsonify(error="Invalid report path"), 400
+    return send_file(str(requested_path))
 
 
 @app.get("/api/tasks/<int:task_id>")
