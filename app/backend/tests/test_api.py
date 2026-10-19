@@ -88,7 +88,8 @@ def test_update_missing_task_returns_404(client, valid_task):
 
 
 def test_delete_task(client):
-    assert client.delete("/api/tasks/2").status_code == 204
+    res = client.delete("/api/tasks/2")
+    assert res.status_code == 204
     assert client.get("/api/tasks/2").status_code == 404
 
 
