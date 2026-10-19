@@ -126,7 +126,13 @@ form.addEventListener("submit", async (e) => {
 cancelBtn.addEventListener("click", resetForm);
 
 const user = new URLSearchParams(location.search).get("user");
-if (user) $("welcome").innerHTML = `Welcome back, <strong>${user}</strong>`;
+if (user) {
+  const welcome = $("welcome");
+  welcome.textContent = "Welcome back, ";
+  const strong = document.createElement("strong");
+  strong.textContent = user;
+  welcome.appendChild(strong);
+}
 
 (async () => {
   try {
