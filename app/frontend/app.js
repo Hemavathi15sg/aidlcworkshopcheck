@@ -6,6 +6,8 @@ const message = document.getElementById("message");
 const saveBtn = document.getElementById("saveBtn");
 const cancelBtn = document.getElementById("cancelBtn");
 const fields = ["title", "description", "assignedTo", "priority", "area", "startDate", "endDate"];
+const pageSize = 10;
+let currentPage = 1;
 const $ = (id) => document.getElementById(id);
 
 function fillSelect(id, values) {
@@ -45,9 +47,13 @@ function actionButton(label, className, onClick) {
 }
 
 async function loadTasks() {
-  const tasks = await request(API);
+  const result = await request(`${API}?page=${currentPage}&page_size=${pageSize}`);
+  if (currentPage > result.total_pages) {
+    currentPage = Math.max(1, result.total_pages);
+    return loadTasks();
+  }
   body.replaceChildren();
-  tasks.forEach((t) => {
+  result.items.forEach((t) => {
     const row = body.insertRow();
     cell(row, t.id);
     cell(row, t.title);
@@ -65,6 +71,21 @@ async function loadTasks() {
     );
     row.insertCell().append(actions);
   });
+  $("pageIndicator").textContent = `Page ${currentPage} of ${result.total_pages}`;
+  $("previousPage").disabled = currentPage <= 1;
+  $("nextPage").disabled = currentPage >= result.total_pages;
+}
+
+async function changePage(page) {
+  const previousPage = currentPage;
+  currentPage = page;
+  try {
+    await loadTasks();
+    message.textContent = "";
+  } catch (e) {
+    currentPage = previousPage;
+    message.textContent = e.message;
+  }
 }
 
 function startEdit(task) {
@@ -124,6 +145,8 @@ form.addEventListener("submit", async (e) => {
 });
 
 cancelBtn.addEventListener("click", resetForm);
+$("previousPage").addEventListener("click", () => changePage(currentPage - 1));
+$("nextPage").addEventListener("click", () => changePage(currentPage + 1));
 
 const user = new URLSearchParams(location.search).get("user");
 if (user) $("welcome").innerHTML = `Welcome back, <strong>${user}</strong>`;

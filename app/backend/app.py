@@ -86,7 +86,31 @@ def meta():
 
 @app.get("/api/tasks")
 def list_tasks():
-    return jsonify(sorted(tasks.values(), key=lambda t: t["id"]))
+    try:
+        page = int(request.args.get("page", "1"))
+    except ValueError:
+        return jsonify(error="page must be an integer"), 400
+    try:
+        page_size = int(request.args.get("page_size", "10"))
+    except ValueError:
+        return jsonify(error="page_size must be an integer"), 400
+    if page < 1:
+        return jsonify(error="page must be at least 1"), 400
+    if not 1 <= page_size <= 50:
+        return jsonify(error="page_size must be between 1 and 50"), 400
+
+    with lock:
+        ordered_tasks = sorted(tasks.values(), key=lambda t: t["id"])
+    total = len(ordered_tasks)
+    total_pages = (total + page_size - 1) // page_size
+    start = (page - 1) * page_size
+    return jsonify(
+        items=ordered_tasks[start : start + page_size],
+        page=page,
+        page_size=page_size,
+        total=total,
+        total_pages=total_pages,
+    )
 
 
 @app.get("/api/tasks/search")
