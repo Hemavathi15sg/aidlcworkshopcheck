@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Task Manager</title>
+  <style>
+    :root {
+      --primary: #2563eb; --primary-dark: #1d4ed8; --danger: #dc2626; --danger-dark: #b91c1c;
+      --text: #1f2937; --muted: #6b7280; --border: #e5e7eb; --bg: #f3f4f6; --card: #fff;
+    }
+    * { box-sizing: border-box; }
+    body { font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif; margin: 0; background: var(--bg); color: var(--text); font-size: 14px; }
+
+    .topbar { background: #111827; color: #fff; padding: 14px 32px; box-shadow: 0 1px 4px rgba(0,0,0,.2); display: flex; justify-content: space-between; align-items: center; }
+    .topbar h1 { margin: 0; font-size: 18px; font-weight: 600; letter-spacing: .3px; }
+    #welcome { font-size: 13px; color: #d1d5db; }
+    main { max-width: 1400px; margin: 24px auto; padding: 0 32px; }
+
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,.04); margin-bottom: 24px; }
+    .card-header { padding: 14px 20px; border-bottom: 1px solid var(--border); font-size: 15px; font-weight: 600; }
+    .card-body { padding: 20px; }
+
+    #taskForm { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px 20px; }
+    #taskForm label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .4px; }
+    #taskForm input, #taskForm select, #taskForm textarea {
+      padding: 9px 11px; border: 1px solid #d1d5db; border-radius: 6px; font: inherit; font-size: 14px; color: var(--text);
+      text-transform: none; letter-spacing: normal; background: #fff; transition: border-color .15s, box-shadow .15s;
+    }
+    #taskForm textarea { resize: vertical; }
+    #taskForm input:focus, #taskForm select:focus, #taskForm textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,.15); }
+    .span-3 { grid-column: span 3; }
+    .span-4 { grid-column: 1 / -1; }
+    .actions { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 10px; padding-top: 4px; }
+
+    button { padding: 8px 18px; border: 1px solid transparent; border-radius: 6px; cursor: pointer; font: inherit; font-weight: 600; transition: background .15s; }
+    button.primary { background: var(--primary); color: #fff; }
+    button.primary:hover { background: var(--primary-dark); }
+    button.secondary { background: #fff; color: var(--text); border-color: #d1d5db; }
+    button.secondary:hover { background: #f9fafb; }
+    button.danger { background: var(--danger); color: #fff; }
+    button.danger:hover { background: var(--danger-dark); }
+    button.sm { padding: 5px 12px; font-size: 13px; }
+    button.link { background: transparent; color: var(--primary); border-color: #bfdbfe; }
+    button.link:hover { background: #eff6ff; }
+    button.link-danger { background: transparent; color: var(--danger); border-color: #fecaca; }
+    button.link-danger:hover { background: #fef2f2; }
+
+    #message { margin-bottom: 16px; padding: 10px 14px; border-radius: 6px; background: #fef2f2; border: 1px solid #fecaca; color: var(--danger-dark); }
+    #message:empty { display: none; }
+
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { padding: 12px 14px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--border); }
+    th { background: #f9fafb; color: var(--muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .4px; white-space: nowrap; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: #f9fafb; }
+    td:nth-child(1) { color: var(--muted); }
+    td:nth-child(2) { min-width: 220px; font-weight: 600; }
+    td:nth-child(3) { min-width: 320px; line-height: 1.5; color: #4b5563; }
+    td:nth-child(n+4) { white-space: nowrap; }
+    .row-actions { display: flex; gap: 8px; }
+
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+    .p1 { background: #fee2e2; color: #b91c1c; }
+    .p2 { background: #ffedd5; color: #c2410c; }
+    .p3 { background: #dbeafe; color: #1d4ed8; }
+    .p4 { background: #f3f4f6; color: #4b5563; }
+    .area { background: #eef2ff; color: #4338ca; }
+
+    dialog { border: none; border-radius: 10px; padding: 0; width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,.25); }
+    dialog::backdrop { background: rgba(17,24,39,.5); }
+    .dialog-header { padding: 16px 20px 0; font-size: 16px; font-weight: 600; }
+    .dialog-body { padding: 10px 20px 20px; line-height: 1.55; color: #4b5563; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 20px; background: #f9fafb; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <header class="topbar"><h1>Task Manager</h1><span id="welcome"></span></header>
+
+  <main>
+    <section class="card">
+      <div class="card-header" id="formTitle">Add Task</div>
+      <div class="card-body">
+        <form id="taskForm">
+          <input type="hidden" id="taskId" />
+          <label class="span-3">Title <input id="title" required maxlength="200" placeholder="Enter task title" /></label>
+          <label>Priority <select id="priority" required></select></label>
+          <label class="span-4">Description <textarea id="description" rows="3" maxlength="1000" placeholder="Describe the task"></textarea></label>
+          <label>Assigned To <select id="assignedTo" required></select></label>
+          <label>Area <select id="area" required></select></label>
+          <label>Start Date <input type="date" id="startDate" required /></label>
+          <label>End Date <input type="date" id="endDate" required /></label>
+          <div class="actions">
+            <button type="button" class="secondary" id="cancelBtn" hidden>Cancel</button>
+            <button type="submit" class="primary" id="saveBtn">Add Task</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <div id="message"></div>
+
+    <section class="card">
+      <div class="card-header">Tasks</div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th><th>Title</th><th>Description</th><th>Assigned To</th>
+              <th>Priority</th><th>Area</th><th>Start Date</th><th>End Date</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="taskBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="confirmDialog">
+    <form method="dialog">
+      <div class="dialog-header">Delete task?</div>
+      <div class="dialog-body" id="confirmText"></div>
+      <div class="dialog-actions">
+        <button value="cancel" class="secondary" autofocus>Cancel</button>
+        <button value="ok" class="danger">Delete</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="/assets/app.js"></script>
+</body>
+</html>

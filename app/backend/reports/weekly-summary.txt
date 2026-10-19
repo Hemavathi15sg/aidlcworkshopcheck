@@ -1,0 +1,4 @@
+Weekly Summary - Customer Self-Service Portal
+==============================================
+Completed: 3 | In progress: 5 | Not started: 7
+Top risk: Azure AD B2C integration depends on tenant approval.

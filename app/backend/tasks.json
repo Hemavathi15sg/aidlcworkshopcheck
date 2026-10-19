@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "title": "Conduct stakeholder workshops for the customer self-service portal",
+    "description": "Run discovery sessions with Sales, Support and Finance to capture current pain points and must-have features. Get product owner sign-off on the requirements document.",
+    "assignedTo": "Mohan",
+    "priority": 1,
+    "area": "Requirements",
+    "startDate": "2026-09-21",
+    "endDate": "2026-09-30"
+  },
+  {
+    "id": 2,
+    "title": "Define acceptance criteria for order tracking and invoice download user stories",
+    "description": "Split epics into user stories with Given/When/Then criteria, covering edge cases like cancelled orders and partial shipments. Review with QA.",
+    "assignedTo": "Priya",
+    "priority": 2,
+    "area": "Requirements",
+    "startDate": "2026-09-28",
+    "endDate": "2026-10-03"
+  },
+  {
+    "id": 3,
+    "title": "Create high-fidelity Figma designs for the dashboard and order details screens",
+    "description": "Design responsive layouts using the company design system, meeting WCAG 2.1 AA. Validate the clickable prototype with pilot customers.",
+    "assignedTo": "Hema",
+    "priority": 2,
+    "area": "Design",
+    "startDate": "2026-10-01",
+    "endDate": "2026-10-09"
+  },
+  {
+    "id": 4,
+    "title": "Design the database schema and entity relationships for orders and invoices",
+    "description": "Model Customer, Order, Shipment and Invoice entities with keys and indexes. Produce an ER diagram and migration script for DBA review.",
+    "assignedTo": "Akshay",
+    "priority": 1,
+    "area": "Design",
+    "startDate": "2026-10-02",
+    "endDate": "2026-10-07"
+  },
+  {
+    "id": 5,
+    "title": "Implement OAuth 2.0 login with Azure AD B2C and role-based access control",
+    "description": "Integrate Azure AD B2C sign-in and validate JWT tokens on every API call. Map claims to Customer and Support Agent roles.",
+    "assignedTo": "Sandeep",
+    "priority": 1,
+    "area": "Development",
+    "startDate": "2026-10-06",
+    "endDate": "2026-10-15"
+  },
+  {
+    "id": 6,
+    "title": "Build REST endpoints for order history with pagination, filtering and sorting",
+    "description": "Develop order endpoints with status and date filters and sorting. Ensure customers only see their own orders and document in OpenAPI.",
+    "assignedTo": "Akshay",
+    "priority": 1,
+    "area": "Development",
+    "startDate": "2026-10-08",
+    "endDate": "2026-10-17"
+  },
+  {
+    "id": 7,
+    "title": "Develop PDF invoice generation and secure download service",
+    "description": "Generate branded PDF invoices on demand and store them in Blob Storage. Serve downloads through short-lived SAS links.",
+    "assignedTo": "Praveen",
+    "priority": 2,
+    "area": "Development",
+    "startDate": "2026-10-12",
+    "endDate": "2026-10-21"
+  },
+  {
+    "id": 8,
+    "title": "Write automated API regression suite and integrate it into the CI pipeline",
+    "description": "Create pytest tests for auth, orders and invoice download. Run them on every pull request and block merges on failure.",
+    "assignedTo": "Akash",
+    "priority": 2,
+    "area": "Testing",
+    "startDate": "2026-10-14",
+    "endDate": "2026-10-23"
+  },
+  {
+    "id": 9,
+    "title": "Execute load and performance testing for peak month-end traffic",
+    "description": "Simulate 2,000 concurrent users with JMeter. Target p95 response time under 800 ms with less than 0.5% errors.",
+    "assignedTo": "Hema",
+    "priority": 3,
+    "area": "Testing",
+    "startDate": "2026-10-22",
+    "endDate": "2026-10-28"
+  },
+  {
+    "id": 10,
+    "title": "Perform user acceptance testing with pilot customers and track defects",
+    "description": "Run a one-week UAT with five pilot customers and triage issues daily. Share a go/no-go summary with the release board.",
+    "assignedTo": "Priya",
+    "priority": 2,
+    "area": "Testing",
+    "startDate": "2026-10-26",
+    "endDate": "2026-11-02"
+  },
+  {
+    "id": 11,
+    "title": "Provision staging and production infrastructure using Bicep templates",
+    "description": "Write Bicep templates for App Service, Azure SQL, Storage and Key Vault. Use managed identity and keep secrets in Key Vault.",
+    "assignedTo": "Sandeep",
+    "priority": 2,
+    "area": "Deployment",
+    "startDate": "2026-10-19",
+    "endDate": "2026-10-27"
+  },
+  {
+    "id": 12,
+    "title": "Configure blue-green production release with automated rollback",
+    "description": "Use deployment slots to smoke-test before swapping to production. Configure health alerts and a five-minute rollback procedure.",
+    "assignedTo": "Mohan",
+    "priority": 1,
+    "area": "Deployment",
+    "startDate": "2026-11-02",
+    "endDate": "2026-11-06"
+  },
+  {
+    "id": 13,
+    "title": "Publish OpenAPI documentation and developer onboarding guide",
+    "description": "Host interactive API docs from the OpenAPI spec. Write an onboarding guide covering local setup, testing and coding conventions.",
+    "assignedTo": "Akash",
+    "priority": 3,
+    "area": "Documentation",
+    "startDate": "2026-10-27",
+    "endDate": "2026-11-03"
+  },
+  {
+    "id": 14,
+    "title": "Prepare end-user help centre articles and support runbook",
+    "description": "Write help articles for tracking orders and downloading invoices. Create a Support runbook with common issues and escalation paths.",
+    "assignedTo": "Praveen",
+    "priority": 4,
+    "area": "Documentation",
+    "startDate": "2026-11-02",
+    "endDate": "2026-11-10"
+  },
+  {
+    "id": 15,
+    "title": "Record release notes and conduct post-launch retrospective",
+    "description": "Publish release notes with new features and known limitations. Hold a team retrospective two weeks after launch.",
+    "assignedTo": "Mohan",
+    "priority": 4,
+    "area": "Documentation",
+    "startDate": "2026-11-09",
+    "endDate": "2026-11-20"
+  }
+]

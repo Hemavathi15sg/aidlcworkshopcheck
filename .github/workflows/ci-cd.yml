@@ -1,0 +1,94 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  PYTHON_VERSION: "3.12"
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app/backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            app/backend/requirements.txt
+            app/backend/requirements-dev.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Build (compile check)
+        run: python -m compileall -q app.py openapi.py
+
+      - name: Run tests with coverage
+        run: pytest -v --cov=app --cov=openapi --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml
+        continue-on-error: false
+
+      - name: Coverage summary
+        if: always()
+        run: |
+          echo "## Code Coverage" >> $GITHUB_STEP_SUMMARY
+          coverage report --format=markdown >> $GITHUB_STEP_SUMMARY || true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            app/backend/test-results.xml
+            app/backend/coverage.xml
+
+      - name: Prepare application package
+        working-directory: .
+        run: |
+          mkdir -p package/app
+          rsync -a --exclude='tests' --exclude='__pycache__' --exclude='.pytest_cache' --exclude='.coverage' --exclude='coverage.xml' --exclude='test-results.xml' --exclude='requirements-dev.txt' --exclude='pytest.ini' app/ package/app/
+          cp app/backend/requirements.txt package/requirements.txt
+
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: application
+          path: package/
+
+  deploy:
+    name: Deploy to Azure App Service
+    needs: build-and-test
+    # Runs only on a push (merge) to master; skipped until the Azure variables are configured
+    if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/master' && vars.AZURE_APP_NAME != '' }}
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ steps.app.outputs.webapp-url }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: application
+          path: application
+
+      # The startup command is set once in the App Service (see Exercise 4)
+      - name: Deploy application
+        id: app
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_APP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: application
