@@ -5,7 +5,8 @@ A lightweight task management application with a **Python (Flask) REST API** and
 ## Features
 
 - Create, view, update and delete tasks (CRUD)
-- Tasks displayed in a table with priority and area badges
+- Tasks displayed in an ID-sorted, paginated table with priority and area badges
+- Previous/Next controls for navigating task pages
 - In-app delete confirmation dialog
 - Server-side validation of all task fields
 - Interactive API documentation with Swagger UI
@@ -92,13 +93,63 @@ python app.py
 | Method | Endpoint               | Description                                  |
 |--------|------------------------|----------------------------------------------|
 | GET    | `/api/meta`            | Allowed values for assignees, areas, priority |
-| GET    | `/api/tasks`           | List all tasks                               |
+| GET    | `/api/tasks`           | List a page of tasks, sorted by ID ascending |
 | GET    | `/api/tasks/{id}`      | Get a task by ID                             |
 | GET    | `/api/tasks/search?q=` | Search tasks by title                        |
 | GET    | `/api/reports?name=`   | Download a report file                       |
 | POST   | `/api/tasks`           | Create a task                                |
 | PUT    | `/api/tasks/{id}`      | Update a task                                |
 | DELETE | `/api/tasks/{id}`      | Delete a task                                |
+
+### List tasks
+
+`GET /api/tasks` accepts these optional query parameters:
+
+| Parameter  | Default | Limits       | Description           |
+|------------|---------|--------------|-----------------------|
+| `page`     | `1`     | 1 or greater | Page number            |
+| `page_size`| `10`    | 1–50         | Tasks per page         |
+
+The JSON response contains `items` (the tasks on this page), `page`, `page_size`,
+`total` (all tasks), and `total_pages` (zero when there are no tasks). Tasks are
+ordered by ascending ID. A page beyond the last page returns an empty `items` array.
+
+Example request:
+
+```text
+GET http://localhost:5000/api/tasks?page=1&page_size=1
+```
+
+Example response:
+
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Conduct stakeholder workshops for the customer self-service portal",
+      "description": "Run discovery sessions with Sales, Support and Finance to capture current pain points and must-have features. Get product owner sign-off on the requirements document.",
+      "assignedTo": "Mohan",
+      "priority": 1,
+      "area": "Requirements",
+      "startDate": "2026-09-21",
+      "endDate": "2026-09-30"
+    }
+  ],
+  "page": 1,
+  "page_size": 1,
+  "total": 15,
+  "total_pages": 15
+}
+```
+
+Invalid pagination returns status `400` with an `error` message: `page` and
+`page_size` must be integers, `page` must be at least 1, and `page_size` must be
+between 1 and 50.
+
+In the frontend, **Previous** and **Next** navigate one page at a time. Previous is
+disabled on the first page and Next on the last page; the indicator shows the
+current page and total pages.
 
 Example request:
 
